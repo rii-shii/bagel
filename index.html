@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bagel.</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--pink:#f45b91;--soft:#fff0ed;--cream:#fff9f5;--text:#463b38;--muted:#96827a;--border:#f1e5df}
+body{font-family:Arial,sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+header{position:sticky;top:0;z-index:10;background:#fffF;backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:15px 6%;display:flex;align-items:center;gap:20px}
+.menu-toggle{position:relative;border:0;background:none;font-size:28px;color:var(--text)}
+.notification-dot{position:absolute;top:2px;right:0;width:9px;height:9px;background:#f01861;border:2px solid white;border-radius:50%;display:none}
+.notification-dot.visible{display:block}
+.logo{font-size:30px;font-weight:900;color:var(--pink);text-decoration:none;letter-spacing:-1px}
+.search{margin-left:auto;width:min(300px,45vw);padding:11px 15px;border:1px solid var(--border);border-radius:30px;background:#fffaf8;outline-color:var(--pink)}
+
+ main{max-width:1100px;margin:auto;padding:25px 18px}
+.hero{padding:30px 20px;margin-bottom:22px;text-align:center;border-radius:22px;background:linear-gradient(135deg,#000000,#000000,#000000)}
+.hero h1{font-size:clamp(26px,4vw,38px);margin-bottom:10px}
+.hero p{color:#ef0d0d;line-height:1.6}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;align-items:start}
+.card{background:white;border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px}
+.card-content{padding:20px}
+.section-title{font-size:23px;margin:0 0 17px}
+
+
+.profile-cover{height:130px;background:linear-gradient(135deg,#f7b8c7,#ffe1d4,#dfe8d5);background-position:center;background-size:cover;display:grid;place-items:center;font-size:35px}
+.profile-info{text-align:center;padding:0 15px 18px}
+.avatar{width:76px;height:76px;border-radius:50%;background:#f9d7c9;border:4px solid white;display:grid;place-items:center;overflow:hidden;font-size:32px;flex-shrink:0}
+.avatar img,.small-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-avatar{margin:-38px auto 10px;position:relative}
+.profile-info h2{font-size:20px;margin-bottom:6px}
+.profile-info p{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.profile-stats{display:flex;justify-content:space-around;padding:15px 8px;border-top:1px solid var(--border)}
+.profile-stats div{text-align:center}
+.profile-stats strong{display:block;font-size:19px;margin-bottom:5px}
+.profile-stats span{font-size:12px;color:var(--muted)}
+.primary-btn{border:0;background:var(--pink);color:white;border-radius:25px;padding:12px 20px;font-weight:bold}
+.secondary-btn{border:1px solid #f3d8df;background:var(--soft);color:var(--text);border-radius:25px;padding:11px 18px}
+.full-btn{width:100%}
+.follow-btn{margin:14px auto 0}
+
+.composer{padding:18px}
+.composer-top{display:flex;gap:12px;align-items:center}
+.composer textarea{flex:1;min-width:0;min-height:60px;resize:vertical;padding:14px;border:1px solid var(--border);border-radius:15px;outline-color:var(--pink);background:#fffaf8}
+.composer-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
+.upload-btn{display:inline-block;background:var(--soft);color:#a65e70;border-radius:12px;padding:11px 15px;cursor:pointer;font-size:14px}
+#photoInput{display:none}
+
+.photo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}
+.photo-card{background:white;border:1px solid var(--border);border-radius:18px;overflow:hidden;min-width:0}
+.post-header{display:flex;align-items:center;gap:10px;padding:14px}
+.small-avatar{width:40px;height:40px;border-radius:50%;background:#f9d7c9;display:grid;place-items:center;overflow:hidden;flex-shrink:0;cursor:pointer}
+.post-user{font-size:14px;font-weight:bold;cursor:pointer;overflow-wrap:anywhere}
+.post-user:hover{text-decoration:underline}
+.post-time{font-size:12px;color:var(--muted);margin-top:4px}
+.post-image{width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:zoom-in;background:#f4e9e2}
+.photo-details{padding:14px}
+.post-title{font-size:16px;font-weight:800;margin-bottom:6px;overflow-wrap:anywhere}
+.photo-caption{font-size:14px;line-height:1.5;overflow-wrap:anywhere;margin-bottom:13px}
+.photo-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.like-btn,.save-btn,.delete-btn{border:0;border-radius:10px;padding:8px 10px;background:#fff3ef;font-size:13px}
+.like-btn.liked,.save-btn.saved{background:#ffe0e8;color:#d83e73}
+.delete-btn{background:#f5f1ee;color:#786963}
+.empty-state{grid-column:1/-1;background:white;border:1px solid var(--border);border-radius:18px;text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state div{font-size:40px;margin-bottom:12px}
+.empty-state h3{color:var(--text);margin-bottom:8px}
+.comment-area{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+.comment-list{font-size:12px;line-height:1.5;margin:8px 0;color:var(--text)}
+.comment-form{display:flex;gap:6px;margin-top:8px}
+.comment-form input{min-width:0;flex:1;border:1px solid var(--border);border-radius:10px;padding:8px;font-size:12px}
+.comment-form button{border:0;border-radius:10px;background:var(--soft);padding:8px 10px;font-size:12px}
+.count-label{font-variant-numeric:tabular-nums}
+.profile-posts-title{margin:20px 0 12px;font-size:20px}
+
+.edit-form{display:grid;gap:15px}
+.edit-form label{font-size:13px;font-weight:bold}
+.edit-form input,.edit-form textarea{width:100%;margin-top:7px;border:1px solid var(--border);border-radius:12px;padding:12px;outline-color:var(--pink);background:#fffaf8}
+.edit-form textarea{resize:vertical;min-height:80px}
+
+.menu-backdrop{position:fixed;inset:0;z-index:39;background:#28191e59}
+.menu-drawer{position:fixed;z-index:40;inset:0 auto 0 0;width:min(285px,82vw);background:white;box-shadow:10px 0 35px #50322d29;padding:24px 18px;display:flex;flex-direction:column;gap:12px}
+.menu-drawer h2{color:var(--pink);margin-bottom:12px;font-size:37px;font-weight:900}
+.drawer-link{border:0;border-radius:12px;background:#fff4f5;color:var(--text);padding:14px 15px;text-align:left;font-weight:900}
+.drawer-link:hover{background:#ffe3ec}
+.drawer-post{margin-top:auto;border:0;border-radius:25px;padding:15px;background:var(--pink);color:white;font-weight:900;font-size:16px}
+
+.notice{display:flex;gap:12px;padding:15px 0;border-bottom:1px solid var(--border)}
+.notice-icon{width:42px;height:42px;display:grid;place-items:center;background:var(--soft);border-radius:50%;flex-shrink:0}
+.notice p{font-size:13px;line-height:1.5}
+.notice time{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+.toast{position:fixed;z-index:100;bottom:25px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:12px 18px;border-radius:12px;font-size:13px;max-width:90vw;text-align:center}
+
+.image-modal{position:fixed;z-index:50;inset:0;background:#221a23bb;display:flex;justify-content:center;align-items:center;padding:20px}
+.viewer{width:min(700px,95vw);max-height:90vh;overflow:auto;background:white;border-radius:20px;padding:15px}
+.viewer-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.close-viewer{width:35px;height:35px;border:0;background:var(--soft);border-radius:50%;font-size:22px}
+.viewer-image-wrap{height:60vh;overflow:auto;background:#f6eee9;border-radius:13px;display:flex;align-items:center;justify-content:center}
+#viewerImage{max-width:100%;max-height:100%;object-fit:contain}
+.zoom-controls{display:flex;align-items:center;gap:10px;margin-top:12px}
+.zoom-controls input{flex:1;min-width:0;accent-color:var(--pink)}
+.zoom-controls button{border:0;background:var(--soft);border-radius:10px;padding:8px 12px}
+
+@media(max-width:800px){
+ .layout{grid-template-columns:1fr}
+ .sidebar{display:none}
+ .photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:520px){
+ header{padding:13px 15px;gap:12px}
+ .logo{font-size:25px}
+ main{padding:18px 12px}
+ .search{width:38vw;padding:10px}
+ .photo-grid{grid-template-columns:1fr;gap:12px}
+ .hero{padding:25px 15px}
+ .composer{padding:13px}
+ .viewer-image-wrap{height:55vh}
+}
+</style>
+</head>
+
+<body>
+<header>
+ <button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰<span id="notificationDot" class="notification-dot"></span></button>
+ <a href="#" class="logo" id="homeLogo">bagel.</a>
+ <input class="search" id="searchInput" type="search" placeholder="Search posts...">
+</header>
+
+<div id="menuBackdrop" class="menu-backdrop hidden"></div>
+<aside id="menuDrawer" class="menu-drawer hidden">
+ <h2>bagel.</h2>
+ <button class="drawer-link" data-page="feed">🏠 Home</button>
+ <button class="drawer-link" data-page="notifications">🔔 Notifications</button>
+ <button class="drawer-link" data-page="profile">👤 Profile</button>
+ <button class="drawer-post" id="drawerPostBtn">＋ Post</button>
+</aside>
+
+
+ <div class="layout">
+  <aside class="sidebar">
+   <section class="card">
+    <div class="profile-cover" id="sidebarBanner">🌸 ✨ 🌷</div>
+    <div class="profile-info">
+     <div class="avatar profile-avatar" id="sidebarAvatar">🐻</div>
+     <h2 id="sidebarName">My Photo Diary</h2>
+     <p id="sidebarUsername">@yourlittleworld</p>
+     <p id="sidebarBio" style="margin-top:8px">Collecting little moments</p>
+    </div>
+    <div class="profile-stats">
+     <div><strong id="postCount">0</strong><span>Posts</span></div>
+     <div><strong id="likeCount">0</strong><span>Likes</span></div>
+     <div><strong id="savedCount">0</strong><span>Saved</span></div>
+    </div>
+    <div class="card-content">
+     <button class="primary-btn full-btn" id="editProfileBtn">Edit Profile</button>
+    </div>
+   </section>
+  </aside>
+
+<main>
+ <section class="hero" id="hero">
+  <h1>Share moments.</h1>
+  <p>Your little corner of the internet to collect memories</p>
+ </section>
+
+  <section>
+   <section id="feedSection">
+    <div class="card composer">
+     <div class="composer-top">
+      <div class="avatar" id="composerAvatar">🐻</div>
+      <textarea id="captionInput" placeholder="Share a little moment..."></textarea>
+     </div>
+     <input id="titleInput" type="text" maxlength="100" placeholder="Add a title to your photo (optional)" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fffaf8;outline-color:var(--pink)">
+     <div class="composer-actions">
+      <label class="upload-btn" for="photoInput">＋ Add photos</label>
+      <input type="file" id="photoInput" accept="image/*" multiple>
+      <button class="primary-btn" id="postBtn">Post</button>
+     </div>
+     <p id="selectedFilesText" style="font-size:12px;color:#96827a;margin-top:10px"></p>
+    </div>
+    <h2 class="section-title">Your feed</h2>
+    <div class="photo-grid" id="photoGrid"></div>
+   </section>
+
+   <section id="notificationsSection" class="hidden">
+    <h2 class="section-title">Notifications</h2>
+    <div class="card card-content" id="notificationList"></div>
+   </section>
+
+   <section id="profileSection" class="hidden">
+    <h2 class="section-title" id="profileSectionTitle">Your profile</h2>
+    <div class="card">
+     <div class="profile-cover" id="profileBanner">🌸 ✨ 🌷</div>
+     <div class="card-content" style="text-align:center">
+      <div class="avatar" id="profileAvatar" style="margin:0 auto 12px">🐻</div>
+      <h2 id="profilePageName">My Photo Diary</h2>
+      <p id="profilePageUsername" style="color:#96827a;margin-top:6px">@yourlittleworld</p>
+      <p id="profilePageBio" style="margin:12px 0 8px">Collecting little moments
+      </p>
+      <p class="count-label"><strong id="followerCount">0</strong> followers · <strong id="followingCount">0</strong> following</p>
+      <button class="primary-btn follow-btn hidden" id="followBtn">＋ Follow</button>
+      <button class="primary-btn full-btn" id="profileEditShortcut">Edit Profile</button>
+     </div>
+    </div>
+
+    <div class="card card-content" id="profileEditCard">
+     <h3 style="margin-bottom:16px">Edit your profile</h3>
+     <form class="edit-form" id="profileForm">
+      <label>Display name
+       <input id="nameInput" maxlength="40" placeholder="Your name">
+      </label>
+      <label>Username
+       <input id="handleInput" maxlength="30" placeholder="yourusername">
+      </label>
+      <label>Bio
+       <textarea id="bioInput" maxlength="180" placeholder="Tell us about yourself"></textarea>
+      </label>
+      <label>Profile picture
+       <input id="avatarInput" type="file" accept="image/*">
+      </label>
+      <label>Banner picture
+       <input id="bannerInput" type="file" accept="image/*">
+      </label>
+      <button class="primary-btn" type="submit">Save Profile</button>
+     </form>
+    </div>
+
+    <h3 class="profile-posts-title">Posts</h3>
+    <div class="photo-grid" id="profilePostGrid"></div>
+   </section>
+  </section>
+ </div>
+</main>
+
+<div class="image-modal hidden" id="imageModal">
+ <div class="viewer">
+  <div class="viewer-header">
+   <h3 id="viewerCaption">Photo</h3>
+   <button class="close-viewer" id="closeViewer">×</button>
+  </div>
+  <div class="viewer-image-wrap">
+   <img id="viewerImage" alt="Expanded photo">
+  </div>
+  <div class="zoom-controls">
+   <button id="zoomOut">−</button>
+   <input type="range" id="zoomSlider" min="50" max="200" value="100" step="10">
+   <span id="zoomLabel">100%</span>
+   <button id="zoomIn">+</button>
+  </div>
+ </div>
+</div>
+
+<div class="toast hidden" id="toast" role="status"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const DEFAULT_PROFILE = {
+ name: "My Photo Diary",
+ username: "yourlittleworld",
+ bio: "Collecting little moments",
+ avatar: "",
+ banner: ""
+};
+
+let profile = {...DEFAULT_PROFILE};
+let posts = [];
+let notifications = [];
+let selectedFiles = [];
+let viewingOtherProfile = false;
+let viewedProfile = null;
+let followedUsers = [];
+let toastTimer;
+
+function showToast(message) {
+ $("toast").textContent = message;
+ $("toast").classList.remove("hidden");
+ clearTimeout(toastTimer);
+ toastTimer = setTimeout(() => $("toast").classList.add("hidden"), 2500);
+}
+
+function saveData() {
+ try {
+  localStorage.setItem("bagelProfile", JSON.stringify(profile));
+  localStorage.setItem("bagelPosts", JSON.stringify(posts));
+  localStorage.setItem("bagelNotifications", JSON.stringify(notifications));
+  localStorage.setItem("bagelFollowedUsers", JSON.stringify(followedUsers));
+  return true;
+ } catch (error) {
+  showToast("Storage is full. Try using smaller photos.");
+  return false;
+ }
+}
+
+function loadData() {
+ try {
+  profile = {...DEFAULT_PROFILE, ...JSON.parse(localStorage.getItem("bagelProfile") || "{}")};
+ } catch {}
+
+ try {
+  posts = JSON.parse(localStorage.getItem("bagelPosts") || "[]");
+  if (!Array.isArray(posts)) posts = [];
+ } catch { posts = []; }
+
+ try {
+  notifications = JSON.parse(localStorage.getItem("bagelNotifications") || "[]");
+  if (!Array.isArray(notifications)) notifications = [];
+ } catch { notifications = []; }
+
+ try {
+  followedUsers = JSON.parse(localStorage.getItem("bagelFollowedUsers") || "[]");
+  if (!Array.isArray(followedUsers)) followedUsers = [];
+ } catch { followedUsers = []; }
+
+ posts = posts.map(post => ({
+  likesCount: Number(post.likesCount ?? (post.liked ? 1 : 0)),
+  comments: Array.isArray(post.comments) ? post.comments : [],
+  ...post
+ }));
+}
+
+function handle() {
+ return "@" + (profile.username || "yourlittleworld").replace(/^@/, "");
+}
+
+function setAvatar(element, src) {
+ element.replaceChildren();
+ if (src) {
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = "Profile picture";
+  element.appendChild(img);
+ } else {
+  element.textContent = "🐻";
+ }
+}
+
+function updateProfile() {
+ $("sidebarName").textContent = profile.name;
+ $("sidebarUsername").textContent = handle();
+ $("sidebarBio").textContent = profile.bio;
+ $("profilePageName").textContent = profile.name;
+ $("profilePageUsername").textContent = handle();
+ $("profilePageBio").textContent = profile.bio;
+
+ setAvatar($("sidebarAvatar"), profile.avatar);
+ setAvatar($("composerAvatar"), profile.avatar);
+ setAvatar($("profileAvatar"), profile.avatar);
+
+ ["sidebarBanner", "profileBanner"].forEach(id => {
+  const banner = $(id);
+  banner.style.backgroundImage = profile.banner ? `url("${profile.banner}")` : "";
+  banner.textContent = profile.banner ? "" : "🌸 ✨ 🌷";
+ });
+
+ $("nameInput").value = profile.name;
+ $("handleInput").value = profile.username;
+ $("bioInput").value = profile.bio;
+
+ $("postCount").textContent = posts.filter(p => p.owner === "me").length;
+ $("likeCount").textContent = posts.filter(p => p.owner === "me").reduce((sum, p) => sum + Number(p.likesCount || 0), 0);
+ $("savedCount").textContent = posts.filter(p => p.saved).length;
+}
+
+function addNotification(message, icon = "💗") {
+ notifications.unshift({
+  message,
+  icon,
+  time: new Date().toLocaleString(),
+  read: false
+ });
+ notifications = notifications.slice(0, 50);
+ saveData();
+ renderNotifications();
+ updateNotificationDot();
+}
+
+function updateNotificationDot() {
+ const dot = $("notificationDot");
+ const hasUnread = notifications.some(note => !note.read);
+ dot.classList.toggle("visible", hasUnread);
+}
+
+function renderNotifications() {
+ const list = $("notificationList");
+ list.replaceChildren();
+
+ if (!notifications.length) {
+  list.innerHTML = '<div class="empty-state"><div>💌</div><h3>All caught up!</h3><p>Notifications will appear here.</p></div>';
+  updateNotificationDot();
+  return;
+ }
+
+ notifications.forEach(note => {
+  const row = document.createElement("div");
+  row.className = "notice";
+
+  const icon = document.createElement("div");
+  icon.className = "notice-icon";
+  icon.textContent = note.icon || "💗";
+
+  const body = document.createElement("div");
+  const message = document.createElement("p");
+  message.textContent = note.message;
+
+  const time = document.createElement("time");
+  time.textContent = note.time || "Recently";
+
+  body.append(message, time);
+  row.append(icon, body);
+  list.appendChild(row);
+ });
+
+ updateNotificationDot();
+}
+
+function renderPosts() {
+ const grid = $("photoGrid");
+ grid.replaceChildren();
+ const query = $("searchInput").value.trim().toLowerCase();
+
+ const filtered = posts.filter(post =>
+  [post.title, post.caption, post.username, post.name].join(" ").toLowerCase().includes(query)
+ );
+
+ if (!filtered.length) {
+  const empty = document.createElement("div");
+  empty.className = "empty-state";
+  empty.innerHTML = `<div>🌼</div><h3>${query ? "No matching posts" : "Your feed is waiting"}</h3><p>${query ? "Try another search." : "Add a photo to share your first moment."}</p>`;
+  grid.appendChild(empty);
+  updateProfile();
+  return;
+ }
+
+ filtered.forEach(post => {
+  const card = document.createElement("article");
+  card.className = "photo-card";
+
+  const header = document.createElement("div");
+  header.className = "post-header";
+
+  const avatar = document.createElement("div");
+  avatar.className = "small-avatar";
+  setAvatar(avatar, post.avatar);
+
+  const userWrap = document.createElement("div");
+  const user = document.createElement("div");
+  user.className = "post-user";
+  user.textContent = post.username || "@user";
+
+  const time = document.createElement("div");
+  time.className = "post-time";
+  time.textContent = post.time || "Recently";
+
+  userWrap.append(user, time);
+  header.append(avatar, userWrap);
+
+  const openUser = () => openOtherProfile(post);
+  avatar.addEventListener("click", openUser);
+  user.addEventListener("click", openUser);
+  avatar.title = "View profile";
+  user.title = "View profile";
+
+  const img = document.createElement("img");
+  img.className = "post-image";
+  img.src = post.src;
+  img.alt = post.title || post.caption || "Photo";
+  img.addEventListener("click", () => openViewer(post));
+
+  const details = document.createElement("div");
+  details.className = "photo-details";
+
+  const title = document.createElement("div");
+  title.className = "post-title";
+  title.textContent = post.title || "";
+  if (!post.title) title.classList.add("hidden");
+
+  const caption = document.createElement("p");
+  caption.className = "photo-caption";
+  caption.textContent = post.caption || "";
+
+  const actions = document.createElement("div");
+  actions.className = "photo-actions";
+
+  const left = document.createElement("div");
+
+  const like = document.createElement("button");
+  like.className = "like-btn" + (post.liked ? " liked" : "");
+  like.textContent = (post.liked ? "♥ Liked " : "♡ Like ") + Number(post.likesCount || 0);
+  like.classList.add("count-label");
+
+  like.addEventListener("click", () => {
+   post.liked = !post.liked;
+   post.likesCount = Math.max(0, Number(post.likesCount || 0) + (post.liked ? 1 : -1));
+
+   if (post.owner === "me" && post.liked) {
+    addNotification("Someone liked your post.", "❤️");
+   }
+
+   saveData();
+   renderPosts();
+   showToast(post.liked ? "You liked this photo" : "Like removed");
+  });
+
+  left.appendChild(like);
+
+  const right = document.createElement("div");
+  right.style.display = "flex";
+  right.style.gap = "6px";
+
+  const save = document.createElement("button");
+  save.className = "save-btn" + (post.saved ? " saved" : "");
+  save.textContent = post.saved ? "▣ Saved" : "▢ Save";
+
+  save.addEventListener("click", () => {
+   post.saved = !post.saved;
+   saveData();
+   renderPosts();
+   showToast(post.saved ? "Photo saved" : "Photo unsaved");
+  });
+
+  right.appendChild(save);
+
+  if (post.owner === "me") {
+   const del = document.createElement("button");
+   del.className = "delete-btn";
+   del.textContent = "Delete";
+
+   del.addEventListener("click", () => {
+    if (!confirm("Delete this post?")) return;
+    posts = posts.filter(p => p.id !== post.id);
+    saveData();
+    renderPosts();
+    updateProfile();
+    addNotification("You deleted a post.", "🗑️");
+   });
+
+   right.appendChild(del);
+  }
+
+  actions.append(left, right);
+
+  const commentsArea = document.createElement("div");
+  commentsArea.className = "comment-area";
+
+  const commentCount = document.createElement("strong");
+  commentCount.className = "count-label";
+  commentCount.textContent = Number((post.comments || []).length) + " comments";
+
+  const commentList = document.createElement("div");
+  commentList.className = "comment-list";
+
+  (post.comments || []).slice(-3).forEach(comment => {
+   const line = document.createElement("div");
+   line.textContent = (comment.username || "@user") + ": " + comment.text;
+   commentList.appendChild(line);
+  });
+
+  const commentForm = document.createElement("form");
+  commentForm.className = "comment-form";
+
+  const commentInput = document.createElement("input");
+  commentInput.maxLength = 300;
+  commentInput.placeholder = "Write a comment...";
+  commentInput.setAttribute("aria-label", "Write a comment");
+
+  const commentButton = document.createElement("button");
+  commentButton.type = "submit";
+  commentButton.textContent = "Comment";
+
+  commentForm.append(commentInput, commentButton);
+
+  commentForm.addEventListener("submit", event => {
+   event.preventDefault();
+   const text = commentInput.value.trim();
+   if (!text) return;
+
+   post.comments = Array.isArray(post.comments) ? post.comments : [];
+   post.comments.push({
+    username: handle(),
+    text,
+    time: new Date().toISOString()
+   });
+
+   if (post.owner === "me") {
+    addNotification("Someone commented on your post.", "💬");
+   }
+
+   saveData();
+   renderPosts();
+   showToast("Comment added");
+  });
+
+  commentsArea.append(commentCount, commentList, commentForm);
+  details.append(title, caption, actions, commentsArea);
+  card.append(header, img, details);
+  grid.appendChild(card);
+ });
+
+ updateProfile();
+}
+
+function openOtherProfile(post) {
+ viewingOtherProfile = true;
+ viewedProfile = post;
+
+ $("feedSection").classList.add("hidden");
+ $("notificationsSection").classList.add("hidden");
+ $("profileSection").classList.remove("hidden");
+ $("hero").classList.add("hidden");
+
+ $("profileSectionTitle").textContent = (post.username || "@user") + "'s profile";
+ $("profilePageName").textContent = post.name || "Photo Diary";
+ $("profilePageUsername").textContent = post.username || "@user";
+ $("profilePageBio").textContent = post.bio || "Collecting little moments ";
+
+ setAvatar($("profileAvatar"), post.avatar);
+ $("profileBanner").style.backgroundImage = post.banner ? `url("${post.banner}")` : "";
+ $("profileBanner").textContent = post.banner ? "" : "🌸 ✨ 🌷";
+
+ $("profileEditShortcut").classList.add("hidden");
+ $("profileEditCard").classList.add("hidden");
+ $("followBtn").classList.remove("hidden");
+ $("followBtn").textContent = followedUsers.includes(post.username) ? "✓ Following" : "＋ Follow";
+
+ $("followerCount").textContent = Number(post.followersCount || 0);
+ $("followingCount").textContent = Number(post.followingCount || 0);
+
+ renderProfilePosts(post.username);
+ window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function renderProfilePosts(username) {
+ const grid = $("profilePostGrid");
+ grid.replaceChildren();
+
+ const userPosts = posts.filter(
+  post => (post.username || "@user") === username
+ );
+
+ if (!userPosts.length) {
+  const empty = document.createElement("div");
+  empty.className = "empty-state";
+  empty.innerHTML =
+   "<div>🌼</div><h3>No posts yet</h3><p>This profile has not shared any photos here.</p>";
+  grid.appendChild(empty);
+  return;
+ }
+
+ userPosts.forEach(post => {
+  const card = document.createElement("article");
+  card.className = "photo-card";
+
+  const img = document.createElement("img");
+  img.src = post.src;
+  img.alt = post.title || post.caption || "Photo";
+  img.className = "post-image";
+  img.addEventListener("click", () => openViewer(post));
+
+  const details = document.createElement("div");
+  details.className = "photo-details";
+
+  const title = document.createElement("div");
+  title.className = "post-title";
+  title.textContent = post.title || "";
+  if (!post.title) title.classList.add("hidden");
+
+  const caption = document.createElement("p");
+  caption.className = "photo-caption";
+  caption.textContent = post.caption || "";
+
+  const actions = document.createElement("div");
+  actions.className = "photo-actions";
+
+  const like = document.createElement("button");
+  like.className = "like-btn count-label" + (post.liked ? " liked" : "");
+  like.textContent =
+   (post.liked ? "♥ Liked " : "♡ Like ") +
+   Number(post.likesCount || 0);
+
+  like.addEventListener("click", () => {
+   post.liked = !post.liked;
+   post.likesCount = Math.max(
+    0,
+    Number(post.likesCount || 0) + (post.liked ? 1 : -1)
+   );
+
+   if (post.owner === "me" && post.liked) {
+    addNotification("Someone liked your post.", "❤️");
+   }
+
+   saveData();
+   renderPosts();
+   renderProfilePosts(username);
+   updateProfile();
+  });
+
+  const save = document.createElement("button");
+  save.className = "save-btn" + (post.saved ? " saved" : "");
+  save.textContent = post.saved
+   ? "▣ Saved " + Number(post.saveCount || 0)
+   : "▢ Save " + Number(post.saveCount || 0);
+
+  save.addEventListener("click", () => {
+   post.saved = !post.saved;
+   post.saveCount = Math.max(
+    0,
+    Number(post.saveCount || 0) + (post.saved ? 1 : -1)
+   );
+
+   saveData();
+   renderPosts();
+   renderProfilePosts(username);
+   updateProfile();
+   showToast(post.saved ? "Photo saved ♡" : "Photo unsaved");
+  });
+
+  const commentArea = document.createElement("div");
+  commentArea.className = "comment-area";
+
+  const comments = Array.isArray(post.comments) ? post.comments : [];
+
+  const commentCount = document.createElement("strong");
+  commentCount.className = "count-label";
+  commentCount.textContent = comments.length + " comments";
+
+  const commentList = document.createElement("div");
+  commentList.className = "comment-list";
+
+  comments.slice(-3).forEach(comment => {
+   const line = document.createElement("div");
+   line.textContent =
+    (comment.username || "@user") + ": " + comment.text;
+   commentList.appendChild(line);
+  });
+
+  const form = document.createElement("form");
+  form.className = "comment-form";
+
+  const input = document.createElement("input");
+  input.placeholder = "Write a comment...";
+  input.maxLength = 300;
+  input.setAttribute("aria-label", "Write a comment");
+
+  const submit = document.createElement("button");
+  submit.type = "submit";
+  submit.textContent = "Comment";
+
+  form.append(input, submit);
+
+  form.addEventListener("submit", event => {
+   event.preventDefault();
+   const text = input.value.trim();
+   if (!text) return;
+
+   post.comments = Array.isArray(post.comments) ? post.comments : [];
+   post.comments.push({
+    username: handle(),
+    text,
+    time: new Date().toISOString()
+   });
+
+   if (post.owner === "me") {
+    addNotification("Someone commented on your post.", "💬");
+   }
+
+   saveData();
+   renderPosts();
+   renderProfilePosts(username);
+   showToast("Comment added ♡");
+  });
+
+  actions.append(like, save);
+  commentArea.append(commentCount, commentList, form);
+  details.append(title, caption, actions, commentArea);
+  card.append(img, details);
+  grid.appendChild(card);
+ });
+}
+
+
+function switchPage(page) {
+ viewingOtherProfile = false;
+ viewedProfile = null;
+
+ $("hero").classList.toggle("hidden", page !== "feed");
+ $("followBtn").classList.add("hidden");
+ $("profileSectionTitle").textContent = "Your profile";
+ $("profileEditShortcut").classList.remove("hidden");
+ $("profileEditCard").classList.remove("hidden");
+
+ $("feedSection").classList.toggle("hidden", page !== "feed");
+ $("notificationsSection").classList.toggle("hidden", page !== "notifications");
+ $("profileSection").classList.toggle("hidden", page !== "profile");
+
+ if (page === "profile") {
+  updateProfile();
+  renderProfilePosts(handle());
+ }
+
+ if (page === "notifications") {
+  notifications = notifications.map(note => ({...note, read:true}));
+  saveData();
+  renderNotifications();
+ }
+
+ window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function closeMenu() {
+ $("menuDrawer").classList.add("hidden");
+ $("menuBackdrop").classList.add("hidden");
+}
+
+$("followBtn").addEventListener("click", () => {
+ if (!viewedProfile || !viewedProfile.username) return;
+
+ const username = viewedProfile.username;
+
+ if (followedUsers.includes(username)) {
+  followedUsers = followedUsers.filter(item => item !== username);
+  $("followBtn").textContent = "＋ Follow";
+  showToast("Unfollowed " + username);
+ } else {
+  followedUsers.push(username);
+  $("followBtn").textContent = "✓ Following";
+  showToast("Following " + username);
+  addNotification("You followed " + username + ".", "👤");
+ }
+
+ saveData();
+ $("followingCount").textContent = followedUsers.length;
+});
+
+$("menuToggle").addEventListener("click", () => {
+ $("menuDrawer").classList.toggle("hidden");
+ $("menuBackdrop").classList.toggle("hidden");
+});
+
+$("menuBackdrop").addEventListener("click", closeMenu);
+
+document.querySelectorAll("[data-page]").forEach(button => {
+ button.addEventListener("click", () => {
+  switchPage(button.dataset.page);
+  closeMenu();
+ });
+});
+
+$("homeLogo").addEventListener("click", event => {
+ event.preventDefault();
+ switchPage("feed");
+});
+
+$("drawerPostBtn").addEventListener("click", () => {
+ closeMenu();
+ switchPage("feed");
+ $("captionInput").focus();
+ $("captionInput").scrollIntoView({behavior: "smooth", block: "center"});
+});
+
+$("editProfileBtn").addEventListener("click", () => switchPage("profile"));
+
+$("profileEditShortcut").addEventListener("click", () => {
+ $("nameInput").focus();
+ $("nameInput").scrollIntoView({behavior: "smooth", block: "center"});
+});
+
+$("searchInput").addEventListener("input", renderPosts);
+
+$("profileForm").addEventListener("submit", event => {
+ event.preventDefault();
+
+ profile.name = $("nameInput").value.trim() || "My Photo Diary";
+ profile.username = $("handleInput").value.trim().replace(/^@/, "") || "yourlittleworld";
+ profile.bio = $("bioInput").value.trim() || "Collecting little moments ";
+
+ if (saveData()) {
+  updateProfile();
+  renderPosts();
+  showToast("Profile saved");
+ }
+});
+
+function readImage(file, maxSide = 1200) {
+ return new Promise((resolve, reject) => {
+  if (!file || !file.type.startsWith("image/")) {
+   reject(new Error("Please choose an image file."));
+   return;
+  }
+
+  const reader = new FileReader();
+  reader.onerror = () => reject(new Error("Could not read the image."));
+
+  reader.onload = () => {
+   const img = new Image();
+   img.onerror = () => reject(new Error("Could not open the image."));
+
+   img.onload = () => {
+    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    resolve(canvas.toDataURL("image/jpeg", 0.78));
+   };
+
+   img.src = reader.result;
+  };
+
+  reader.readAsDataURL(file);
+ });
+}
+
+$("avatarInput").addEventListener("change", async () => {
+ try {
+  const file = $("avatarInput").files[0];
+  if (!file) return;
+  profile.avatar = await readImage(file, 400);
+  updateProfile();
+  showToast("Profile picture selected. Save to keep it.");
+ } catch (error) {
+  showToast(error.message);
+ }
+});
+
+$("bannerInput").addEventListener("change", async () => {
+ try {
+  const file = $("bannerInput").files[0];
+  if (!file) return;
+  profile.banner = await readImage(file, 1200);
+  updateProfile();
+  showToast("Banner selected. Save your profile to keep it.");
+ } catch (error) {
+  showToast(error.message);
+ }
+});
+
+$("photoInput").addEventListener("change", () => {
+ selectedFiles = Array.from($("photoInput").files || []);
+ $("selectedFilesText").textContent = selectedFiles.length
+  ? selectedFiles.length + " photo(s) selected"
+  : "";
+});
+
+$("postBtn").addEventListener("click", async () => {
+ if (!selectedFiles.length) {
+  $("photoInput").click();
+  return;
+ }
+
+ $("postBtn").disabled = true;
+ $("postBtn").textContent = "Posting…";
+
+ let added = 0;
+
+ for (const file of selectedFiles) {
+  try {
+   const src = await readImage(file);
+
+   posts.unshift({
+    id: Date.now().toString() + Math.random(),
+    src,
+    title: $("titleInput").value.trim(),
+    caption: $("captionInput").value.trim() || "",
+    likesCount: 0,
+    comments: [],
+    liked: false,
+    saved: false,
+    owner: "me",
+    username: handle(),
+    name: profile.name,
+    bio: profile.bio,
+    avatar: profile.avatar,
+    banner: profile.banner,
+    time: new Date().toLocaleString()
+   });
+
+   added++;
+  } catch (error) {
+   showToast(error.message);
+  }
+ }
+
+ if (added) {
+  saveData();
+  addNotification("Your photo was posted.", "🌸");
+  $("captionInput").value = "";
+  $("titleInput").value = "";
+  $("photoInput").value = "";
+  selectedFiles = [];
+  $("selectedFilesText").textContent = "";
+  renderPosts();
+  switchPage("feed");
+  showToast("Post shared");
+ }
+
+ $("postBtn").disabled = false;
+ $("postBtn").textContent = "Post ";
+});
+
+function openViewer(post) {
+ $("viewerImage").src = post.src;
+ $("viewerCaption").textContent = post.title || post.caption || "Photo";
+ $("zoomSlider").value = 100;
+ updateZoom();
+ $("imageModal").classList.remove("hidden");
+}
+
+function closeViewer() {
+ $("imageModal").classList.add("hidden");
+}
+
+
+
+function updateZoom() {
+  const zoom = Number($("zoomSlider").value);
+  const img = $("viewerImage");
+  const wrap = document.querySelector(".viewer-image-wrap");
+
+  $("zoomLabel").textContent = zoom + "%";
+
+  img.style.setProperty("max-width", "none", "important");
+  img.style.setProperty("max-height", "none", "important");
+  img.style.setProperty("width", zoom + "%", "important");
+  img.style.setProperty("height", "auto", "important");
+  img.style.setProperty("flex", "0 0 auto", "important");
+
+  if (wrap) {
+    wrap.style.overflow = "auto";
+  
+  }
+}
+
+
+
+$("closeViewer").addEventListener("click", closeViewer);
+
+$("imageModal").addEventListener("click", event => {
+ if (event.target === $("imageModal")) closeViewer();
+});
+
+$("zoomSlider").addEventListener("input", updateZoom);
+
+$("zoomOut").addEventListener("click", () => {
+ $("zoomSlider").value = Math.max(50, Number($("zoomSlider").value) - 10);
+ updateZoom();
+});
+
+$("zoomIn").addEventListener("click", () => {
+ $("zoomSlider").value = Math.min(200, Number($("zoomSlider").value) + 10);
+ updateZoom();
+});
+
+document.addEventListener("keydown", event => {
+ if (event.key === "Escape") closeViewer();
+});
+
+loadData();
+updateProfile();
+renderPosts();
+renderNotifications();
+
+
+/* BAGEL: Red dot on the actual Notifications menu option */
+(function fixNotificationMenuDot() {
+  const tab = document.querySelector(
+    '#menuDrawer [data-page="notifications"], ' +
+    '#menuDrawer [data-drawer-page="notifications"]'
+  );
+
+  const hamburgerDot = document.getElementById("notificationDot");
+
+  if (!tab) {
+    console.error("Bagel: Notifications menu button was not found.");
+    return;
+  }
+
+  let dot = tab.querySelector(".notification-tab-dot");
+
+  if (!dot) {
+    dot = document.createElement("span");
+    dot.className = "notification-tab-dot";
+
+    Object.assign(dot.style, {
+      position: "absolute",
+      right: "14px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      width: "9px",
+      height: "9px",
+      borderRadius: "50%",
+      backgroundColor: "#f01861",
+      border: "1px solid white",
+      pointerEvents: "none"
+    });
+
+    tab.style.position = "relative";
+    tab.appendChild(dot);
+  }
+
+  function syncNotificationTabDot() {
+    const unread = hamburgerDot &&
+      hamburgerDot.classList.contains("visible");
+
+    dot.style.display = unread ? "block" : "none";
+  }
+
+  syncNotificationTabDot();
+
+  if (hamburgerDot) {
+    new MutationObserver(syncNotificationTabDot).observe(
+      hamburgerDot,
+      {
+        attributes: true,
+        attributeFilter: ["class", "style"]
+      }
+    );
+  }
+
+  // Recheck after the existing notification system updates.
+  const originalUpdate = window.updateNotificationDot;
+
+  if (
+    typeof originalUpdate === "function" &&
+    !originalUpdate.__menuDotFixed
+  ) {
+    const wrappedUpdate = function (...args) {
+      const result = originalUpdate.apply(this, args);
+      syncNotificationTabDot();
+      return result;
+    };
+
+    wrappedUpdate.__menuDotFixed = true;
+    window.updateNotificationDot = wrappedUpdate;
+  }
+})();
+
+
+/* ===== BAGEL: REQUESTED CHANGES ===== */
+
+(function applyBagelChanges() {
+  // 1. Display exactly 2 posts per row in the feed and profile.
+  ["photoGrid", "profilePostGrid"].forEach(id => {
+    const grid = document.getElementById(id);
+
+    if (grid) {
+      grid.style.setProperty(
+        "grid-template-columns",
+        "repeat(2, minmax(0, 1fr))",
+        "important"
+      );
+    }
+  });
+
+  // 2. Hide the user profile sidebar on the main page.
+  const sidebar = document.querySelector(".sidebar");
+
+  if (sidebar) {
+    sidebar.style.setProperty("display", "none", "important");
+  }
+
+  // Let the feed use the available width.
+  const layout = document.querySelector(".layout");
+
+  if (layout) {
+    layout.style.setProperty(
+      "grid-template-columns",
+      "minmax(0, 1fr)",
+      "important"
+    );
+  }
+
+  // 3. Hide the Share Moments section.
+  // Keep the element in the DOM because existing JavaScript uses it.
+  const hero = document.getElementById("hero");
+
+  if (hero) {
+    hero.style.setProperty("display", "none", "important");
+  }
+
+  // 4. Show a red dot on the hamburger when notifications are unread.
+  const dot = document.getElementById("notificationDot");
+
+  if (dot) {
+    dot.style.cssText += `
+      position: absolute;
+      top: 2px;
+      right: 0;
+      width: 9px;
+      height: 9px;
+      background: #f01861;
+      border: 2px solid white;
+      border-radius: 50%;
+    `;
+  }
+
+  // Use your existing notification system.
+  if (typeof updateNotificationDot === "function") {
+    updateNotificationDot();
+  }
+})();
+
+/* Add a red dot beside the Notification menu option */
+(function addNotificationTabDot() {
+  const notificationDot = document.getElementById("notificationDot");
+
+  // Find the Notification option in the hamburger menu.
+  const notificationTab = [...document.querySelectorAll(
+    "button, a, [role='button']"
+  )].find(el =>
+    el.textContent.trim().toLowerCase() === "notification" ||
+    el.textContent.trim().toLowerCase() === "notifications"
+  );
+
+  if (!notificationTab) return;
+
+  // Avoid creating duplicate dots.
+  if (notificationTab.querySelector(".notification-tab-dot")) return;
+
+  notificationTab.style.position = "relative";
+
+  const dot = document.createElement("span");
+  dot.className = "notification-tab-dot";
+
+  Object.assign(dot.style, {
+    display: "none",
+    width: "9px",
+    height: "9px",
+    background: "#f01861",
+    borderRadius: "50%",
+    position: "absolute",
+    right: "12px",
+    top: "50%",
+    transform: "translateY(-50%)"
+  });
+
+  notificationTab.appendChild(dot);
+
+  // Match the tab dot to the existing hamburger dot.
+  const syncDot = () => {
+    dot.style.display =
+      notificationDot && getComputedStyle(notificationDot).display !== "none"
+        ? "block"
+        : "none";
+  };
+
+  syncDot();
+
+  // Keep it synced when the existing notification dot changes.
+  if (notificationDot) {
+    new MutationObserver(syncDot).observe(notificationDot, {
+      attributes: true,
+      attributeFilter: ["style", "class"]
+    });
+  }
+})();
+
+
+/* ===== BAGEL: RESPONSIVE LAYOUT + SETTINGS ===== */
+
+(function bagelResponsiveSettings() {
+  const $ = id => document.getElementById(id);
+
+  /* 1. Add responsive styles without replacing your existing CSS */
+  const responsiveStyle = document.createElement("style");
+
+  responsiveStyle.textContent = `
+    /* Responsive layout */
+    html {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .layout {
+      width: 100%;
+      min-width: 0;
+    }
+
+    main {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .photo-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .photo-card {
+      min-width: 0;
+    }
+
+    .post-image {
+      max-width: 100%;
+    }
+
+    .photo-actions {
+      flex-wrap: wrap;
+    }
+
+    .settings-page {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .settings-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .settings-card h3 {
+      margin-bottom: 8px;
+      font-size: 17px;
+    }
+
+    .settings-description {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-row:last-child {
+      border-bottom: 0;
+    }
+
+    .settings-row label {
+      min-width: 0;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .settings-row small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: normal;
+      line-height: 1.4;
+    }
+
+    .settings-control {
+      flex-shrink: 0;
+      accent-color: var(--pink);
+    }
+
+    .settings-select {
+      max-width: 48%;
+      min-width: 110px;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--cream);
+      color: var(--text);
+    }
+
+    .settings-action {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      background: var(--soft);
+      color: var(--text);
+      font-weight: bold;
+    }
+
+    .settings-themes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .theme-choice {
+      min-width: 0;
+      padding: 13px 5px;
+      border: 2px solid var(--border);
+      border-radius: 13px;
+      background: var(--cream);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .theme-choice[aria-pressed="true"] {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 2px #f45b9120;
+    }
+
+    .theme-swatch {
+      display: block;
+      width: 27px;
+      height: 27px;
+      margin: 0 auto 8px;
+      border-radius: 50%;
+      border: 1px solid #00000012;
+    }
+
+    .settings-status {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* Settings menu entry */
+    #settingsMenuBtn {
+      position: relative;
+    }
+
+    /* Dark theme */
+    body.bagel-dark {
+      --cream: #201c24;
+      --soft: #342832;
+      --text: #f9edf3;
+      --muted: #c0aeb9;
+      --border: #483744;
+      background: var(--cream);
+      color: var(--text);
+    }
+
+    body.bagel-dark header,
+    body.bagel-dark .card,
+    body.bagel-dark .photo-card,
+    body.bagel-dark .settings-card,
+    body.bagel-dark .menu-drawer,
+    body.bagel-dark .viewer {
+      background: #2b242f;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    body.bagel-dark .drawer-link,
+    body.bagel-dark .settings-action,
+    body.bagel-dark .like-btn,
+    body.bagel-dark .save-btn,
+    body.bagel-dark .comment-form button {
+      background: #40303e;
+      color: var(--text);
+    }
+
+    body.bagel-dark input,
+    body.bagel-dark textarea,
+    body.bagel-dark .settings-select {
+      background: #251f29;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    body.bagel-dark .search {
+      background: #251f29;
+      color: var(--text);
+    }
+
+    /* Light theme */
+    body.bagel-light {
+      --pink: #e879a5;
+      --soft: #f5f5f5;
+      --cream: #ffffff;
+      --text: #333333;
+      --muted: #777777;
+      --border: #e8e8e8;
+      background: white;
+      color: var(--text);
+    }
+
+    body.bagel-light header,
+    body.bagel-light .card,
+    body.bagel-light .photo-card,
+    body.bagel-light .settings-card,
+    body.bagel-light .menu-drawer,
+    body.bagel-light .viewer {
+      background: white;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    body.bagel-light .drawer-link,
+    body.bagel-light .settings-action {
+      background: #f5f5f5;
+      color: var(--text);
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+
+      .sidebar {
+        display: none !important;
+      }
+
+      main {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      header {
+        padding: 12px;
+        gap: 10px;
+      }
+
+      .logo {
+        font-size: 25px;
+      }
+
+      .menu-toggle {
+        font-size: 25px;
+      }
+
+      .search {
+        width: auto;
+        min-width: 0;
+        flex: 1;
+        margin-left: auto;
+      }
+
+      main {
+        padding: 15px 10px;
+      }
+
+      .photo-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 12px;
+      }
+
+      .settings-card {
+        padding: 14px;
+      }
+
+      .settings-row {
+        gap: 8px;
+      }
+
+      .settings-row label {
+        font-size: 13px;
+      }
+
+      .settings-select {
+        min-width: 95px;
+      }
+
+      .settings-themes {
+        gap: 6px;
+      }
+
+      .theme-choice {
+        font-size: 11px;
+      }
+
+      .composer-top {
+        align-items: flex-start;
+      }
+
+      .composer textarea {
+        width: 100%;
+      }
+
+      .composer-actions {
+        flex-wrap: wrap;
+      }
+
+      .primary-btn,
+      .secondary-btn {
+        max-width: 100%;
+      }
+
+      .viewer {
+        width: 100%;
+        padding: 10px;
+      }
+
+      .zoom-controls {
+        gap: 6px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .logo {
+        font-size: 22px;
+      }
+
+      .menu-drawer {
+        width: 85vw;
+      }
+
+      .settings-themes {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-row {
+        align-items: flex-start;
+      }
+    }
+  `;
+
+  document.head.appendChild(responsiveStyle);
+
+  /* 2. Keep the feed responsive when the screen changes size */
+  function updateGridColumns() {
+    const columns = window.matchMedia("(max-width: 520px)").matches
+      ? "1"
+      : "2";
+
+    ["photoGrid", "profilePostGrid"].forEach(id => {
+      const grid = $(id);
+      if (grid) {
+        grid.style.setProperty(
+          "grid-template-columns",
+          `repeat(${columns}, minmax(0, 1fr))`,
+          "important"
+        );
+      }
+    });
+  }
+
+  updateGridColumns();
+  window.addEventListener("resize", updateGridColumns);
+
+  /* 3. Add Settings to the existing hamburger menu */
+  const drawer = $("menuDrawer");
+
+  if (!drawer || $("settingsMenuBtn")) return;
+
+  const settingsButton = document.createElement("button");
+  settingsButton.id = "settingsMenuBtn";
+  settingsButton.className = "drawer-link";
+  settingsButton.type = "button";
+  settingsButton.textContent = "⚙️ Settings";
+
+  const postButton = $("drawerPostBtn");
+
+  if (postButton) {
+    drawer.insertBefore(settingsButton, postButton);
+  } else {
+    drawer.appendChild(settingsButton);
+  }
+
+  /* 4. Create the settings page without replacing your HTML */
+  const settingsPage = document.createElement("section");
+  settingsPage.id = "settingsPage";
+  settingsPage.className = "settings-page hidden";
+
+  settingsPage.innerHTML = `
+    <h2 class="section-title">Settings ⚙️</h2>
+    <p class="settings-description">
+    
+    </p>
+
+    <section class="settings-card">
+      <h3>🎨 Appearance</h3>
+      <p class="settings-description">
+        Choose the look you want to use on this device.
+      </p>
+      <div class="settings-themes">
+        <button type="button" class="theme-choice"
+          data-theme="pink" aria-pressed="true">
+          <span class="theme-swatch"
+            style="background:linear-gradient(135deg,#f45b91,#fff0ed)">
+          </span>
+          Pink dreamy
+        </button>
+        <button type="button" class="theme-choice"
+          data-theme="light" aria-pressed="false">
+          <span class="theme-swatch"
+            style="background:linear-gradient(135deg,#ffffff,#e8e8e8)">
+          </span>
+          Clean light
+        </button>
+        <button type="button" class="theme-choice"
+          data-theme="dark" aria-pressed="false">
+          <span class="theme-swatch"
+            style="background:linear-gradient(135deg,#201c24,#69425e)">
+          </span>
+          Night mode
+        </button>
+      </div>
+    </section>
+
+    <section class="settings-card">
+      <h3>👤 Account</h3>
+      <p class="settings-description">
+        Manage your display name, username, bio, profile picture,
+        and banner picture.
+      </p>
+      <button type="button" class="settings-action" id="settingsAccountBtn">
+        Edit my profile
+      </button>
+    </section>
+
+    <section class="settings-card">
+      <h3>🔔 Notifications</h3>
+      <div class="settings-row">
+        <label for="settingsShowDot">
+          Unread notification dots
+          <small>Show the red indicator when notifications are unread.</small>
+        </label>
+        <input class="settings-control" type="checkbox"
+          id="settingsShowDot" checked>
+      </div>
+    </section>
+
+    <section class="settings-card">
+      <h3>🔒 Privacy preferences</h3>
+      <p class="settings-description">
+        These preferences are saved on this device. They do not make
+        your posts private or control access by other people.
+      </p>
+      <div class="settings-row">
+        <label for="settingsPrivateProfile">
+          Prefer a private profile
+          <small>A saved preference only; it does not restrict profile access.</small>
+        </label>
+        <input class="settings-control" type="checkbox"
+          id="settingsPrivateProfile">
+      </div>
+      <div class="settings-row">
+        <label for="settingsSearchVisibility">
+          Include my posts in local search
+          <small>Controls searching posts in this page, not external search engines.</small>
+        </label>
+        <input class="settings-control" type="checkbox"
+          id="settingsSearchVisibility" checked>
+      </div>
+    </section>
+
+    <section class="settings-card">
+      <h3>🖼️ Feed preferences</h3>
+      <div class="settings-row">
+        <label for="settingsColumns">
+          Posts per row
+          <small>Small phones will still use one column for readability.</small>
+        </label>
+        <select class="settings-select" id="settingsColumns">
+          <option value="1">1 post</option>
+          <option value="2" selected>2 posts</option>
+        </select>
+      </div>
+      <p class="settings-status" id="settingsStatus" aria-live="polite">
+        Your preferences are saved on this device.
+      </p>
+    </section>
+  `;
+
+  const main = document.querySelector("main");
+
+  if (!main) return;
+
+  main.appendChild(settingsPage);
+
+  /* 5. Store and load settings */
+  const defaults = {
+    theme: "pink",
+    showDot: true,
+    privateProfile: false,
+    searchVisibility: true,
+    columns: "2"
+  };
+
+  let preferences = { ...defaults };
+
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem("bagelSettings") || "{}"
+    );
+
+    if (saved && typeof saved === "object") {
+      preferences = { ...defaults, ...saved };
+    }
+  } catch (error) {
+    preferences = { ...defaults };
+  }
+
+  function savePreferences() {
+    try {
+      localStorage.setItem(
+        "bagelSettings",
+        JSON.stringify(preferences)
+      );
+
+      $("settingsStatus").textContent =
+        "Settings saved on this device ";
+    } catch (error) {
+      $("settingsStatus").textContent =
+        "Unable to save settings in this browser.";
+    }
+  }
+
+  function applyTheme(theme) {
+    if (!["pink", "light", "dark"].includes(theme)) {
+      theme = "pink";
+    }
+
+    document.body.classList.remove("bagel-dark", "bagel-light");
+
+    if (theme === "dark") {
+      document.body.classList.add("bagel-dark");
+    } else if (theme === "light") {
+      document.body.classList.add("bagel-light");
+    }
+
+    preferences.theme = theme;
+
+    settingsPage.querySelectorAll("[data-theme]").forEach(button => {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.theme === theme)
+      );
+    });
+  }
+
+  function applyNotificationPreference() {
+    const hamburgerDot = $("notificationDot");
+    const tabDot = drawer.querySelector(".notification-tab-dot");
+
+    if (hamburgerDot) {
+      hamburgerDot.style.display =
+        preferences.showDot ? "" : "none";
+    }
+
+    if (tabDot) {
+      tabDot.style.display =
+        preferences.showDot &&
+        hamburgerDot &&
+        hamburgerDot.classList.contains("visible")
+          ? "block"
+          : "none";
+    }
+  }
+
+  function applyFeedPreference() {
+    const mobile = window.matchMedia("(max-width: 520px)").matches;
+    const columns = mobile ? "1" : preferences.columns;
+
+    ["photoGrid", "profilePostGrid"].forEach(id => {
+      const grid = $(id);
+
+      if (grid) {
+        grid.style.setProperty(
+          "grid-template-columns",
+          `repeat(${columns}, minmax(0, 1fr))`,
+          "important"
+        );
+      }
+    });
+
+    $("settingsColumns").value = preferences.columns;
+  }
+
+  /* 6. Open Settings and hide other page sections */
+  function openSettings() {
+    ["feedSection", "notificationsSection", "profileSection"].forEach(id => {
+      const section = $(id);
+      if (section) section.classList.add("hidden");
+    });
+
+    $("hero").classList.add("hidden");
+    settingsPage.classList.remove("hidden");
+
+    closeMenuIfAvailable();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function closeMenuIfAvailable() {
+    if (typeof closeMenu === "function") {
+      closeMenu();
+    } else {
+      $("menuDrawer").classList.add("hidden");
+      $("menuBackdrop").classList.add("hidden");
+    }
+  }
+
+  function closeSettings() {
+    settingsPage.classList.add("hidden");
+  }
+
+  /* 7. Make existing navigation work after Settings */
+  document.querySelectorAll("[data-page]").forEach(button => {
+    button.addEventListener("click", () => {
+      closeSettings();
+    });
+  });
+
+  const logo = $("homeLogo");
+  if (logo) {
+    logo.addEventListener("click", closeSettings);
+  }
+
+  settingsButton.addEventListener("click", openSettings);
+
+  /* 8. Theme controls */
+  settingsPage.querySelectorAll("[data-theme]").forEach(button => {
+    button.addEventListener("click", () => {
+      applyTheme(button.dataset.theme);
+      savePreferences();
+    });
+  });
+
+  /* 9. Account settings lead to the existing profile editor */
+  $("settingsAccountBtn").addEventListener("click", () => {
+    closeSettings();
+
+    if (typeof switchPage === "function") {
+      switchPage("profile");
+    }
+
+    closeMenuIfAvailable();
+
+    const editCard = $("profileEditCard");
+    if (editCard) {
+      editCard.classList.remove("hidden");
+      editCard.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  });
+
+  /* 10. Notification preferences */
+  $("settingsShowDot").addEventListener("change", event => {
+    preferences.showDot = event.target.checked;
+    savePreferences();
+    applyNotificationPreference();
+  });
+
+  /* 11. Privacy preferences */
+  $("settingsPrivateProfile").addEventListener("change", event => {
+    preferences.privateProfile = event.target.checked;
+    savePreferences();
+  });
+
+  $("settingsSearchVisibility").addEventListener("change", event => {
+    preferences.searchVisibility = event.target.checked;
+    savePreferences();
+
+    const search = $("searchInput");
+    if (search) {
+      search.disabled = !preferences.searchVisibility;
+      if (!preferences.searchVisibility) {
+        search.value = "";
+        if (typeof renderPosts === "function") renderPosts();
+      }
+    }
+  });
+
+  /* 12. Feed column preference */
+  $("settingsColumns").addEventListener("change", event => {
+    preferences.columns = event.target.value === "1" ? "1" : "2";
+    savePreferences();
+    applyFeedPreference();
+  });
+
+  /* 13. Keep both notification dots in sync */
+  const originalUpdate = window.updateNotificationDot;
+
+  if (
+    typeof originalUpdate === "function" &&
+    !originalUpdate.__settingsWrapped
+  ) {
+    const wrappedUpdate = function (...args) {
+      const result = originalUpdate.apply(this, args);
+      applyNotificationPreference();
+      return result;
+    };
+
+    wrappedUpdate.__settingsWrapped = true;
+    window.updateNotificationDot = wrappedUpdate;
+  }
+
+  /* 14. Apply saved settings on startup */
+  applyTheme(preferences.theme);
+
+  $("settingsShowDot").checked = preferences.showDot;
+  $("settingsPrivateProfile").checked = preferences.privateProfile;
+  $("settingsSearchVisibility").checked = preferences.searchVisibility;
+
+  $("searchInput").disabled = !preferences.searchVisibility;
+
+  applyFeedPreference();
+  applyNotificationPreference();
+
+  if (typeof updateNotificationDot === "function") {
+    updateNotificationDot();
+  }
+
+  applyNotificationPreference();
+})();
+
+const viewer = document.querySelector(".viewer");
+
+if (viewer && !document.getElementById("downloadPictureBtn")) {
+  const btn = document.createElement("button");
+  btn.id = "downloadPictureBtn";
+  btn.textContent = "⬇ Download Picture";
+  btn.style.cssText = "display:block;margin:12px auto;padding:10px 16px;border:0;border-radius:10px;background:#f45b91;color:white;cursor:pointer;font-weight:900";
+
+  btn.onclick = () => {
+    const img = document.getElementById("viewerImage");
+    if (!img || !img.src) return;
+
+    const link = document.createElement("a");
+    link.href = img.src;
+    link.download = "bagel-picture.jpg";
+    link.click();
+  };
+
+  viewer.appendChild(btn);
+}
+
+
+/* BAGEL STARTUP LOADING SCREEN */
+(function () {
+  if (document.getElementById("bagelLoader")) return;
+
+  const loader = document.createElement("div");
+  loader.id = "bagelLoader";
+
+  loader.innerHTML = `
+    <div style="text-align:center">
+      <div style="font-size:48px;font-weight:900;color:#f45b91;letter-spacing:-2px">
+        bagel.
+      </div>
+      <div style="margin-top:12px;color:#96827a;font-size:14px">
+        Preparing your bagel...
+      </div>
+      <div style="width:150px;height:4px;background:#ffe2eb;border-radius:20px;margin:22px auto 0;overflow:hidden">
+        <div id="bagelLoaderBar" style="height:100%;width:0;background:#f45b91;border-radius:20px;transition:width 0.15s"></div>
+      </div>
+    </div>
+  `;
+
+  loader.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff9f5;
+    opacity:1;
+    transition:opacity 1.4s ease;
+  `;
+
+  document.body.appendChild(loader);
+
+  let progress = 0;
+  const bar = document.getElementById("bagelLoaderBar");
+
+  const progressTimer = setInterval(() => {
+    progress = Math.min(progress + 10, 90);
+    bar.style.width = progress + "%";
+  }, 100);
+
+  window.addEventListener("load", () => {
+    clearInterval(progressTimer);
+    bar.style.width = "100%";
+
+    setTimeout(() => {
+      loader.style.opacity = "0";
+
+      setTimeout(() => loader.remove(), 450);
+    }, 250);
+  }, { once: true });
+
+  /* Fallback in case the page load event already happened */
+  if (document.readyState === "complete") {
+    window.dispatchEvent(new Event("load"));
+  }
+})();
+
+
+/* BAGEL: Keep existing posts synced with profile changes */
+(function syncBagelProfileWithPosts() {
+  const originalSetItem = Storage.prototype.setItem;
+
+  Storage.prototype.setItem = function (key, value) {
+    let oldProfile = null;
+    let newProfile = null;
+
+    if (key === "bagelProfile" && this === localStorage) {
+      try {
+        oldProfile = JSON.parse(localStorage.getItem("bagelProfile"));
+        newProfile = JSON.parse(value);
+      } catch (e) {}
+    }
+
+    originalSetItem.call(this, key, value);
+
+    if (
+      key !== "bagelProfile" ||
+      this !== localStorage ||
+      !oldProfile ||
+      !newProfile
+    ) return;
+
+    const oldUsername = oldProfile.username;
+    const oldName = oldProfile.name;
+
+    if (
+      oldUsername === newProfile.username &&
+      oldName === newProfile.name &&
+      oldProfile.avatar === newProfile.avatar &&
+      oldProfile.bio === newProfile.bio &&
+      oldProfile.banner === newProfile.banner
+    ) return;
+
+    try {
+      const posts = JSON.parse(
+        localStorage.getItem("bagelPhotos") || "[]"
+      );
+
+      if (!Array.isArray(posts)) return;
+
+      let changed = false;
+
+      posts.forEach(post => {
+        if (!post || typeof post !== "object") return;
+
+        const isOwnPost =
+          (oldUsername && post.username === oldUsername) ||
+          (!post.username && oldName && post.name === oldName);
+
+        if (!isOwnPost) return;
+
+        post.username = newProfile.username;
+        post.name = newProfile.name;
+        post.avatar = newProfile.avatar;
+        post.bio = newProfile.bio;
+        post.banner = newProfile.banner;
+
+        if ("userId" in post && "id" in newProfile) {
+          post.userId = newProfile.id;
+        }
+
+        if ("authorId" in post && "id" in newProfile) {
+          post.authorId = newProfile.id;
+        }
+
+        changed = true;
+      });
+
+      if (changed) {
+        originalSetItem.call(
+          localStorage,
+          "bagelPhotos",
+          JSON.stringify(posts)
+        );
+      }
+    } catch (e) {
+      console.error("Bagel post sync failed:", e);
+    }
+  };
+})();
+
+
+</script>
+</body>
+</html>
